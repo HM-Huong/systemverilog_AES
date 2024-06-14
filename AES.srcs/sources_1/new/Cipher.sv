@@ -7,9 +7,9 @@ module Cipher(
     output logic[127 : 0] oBlock,
     output logic idle
   );
-  typedef enum { IDLE, START, LOOP, FINNAL } State_t;
+  typedef enum { IDLE, KEY_EXPANSION, START_CIPHER, LOOP, FINNAL } State_t;
   State_t step, nextStep;
-  logic[127:0] state, nextState, roundKey, nextRoundKey;
+  logic[127:0] state, nextState;
   logic[3:0] cnt, nextCnt;
 
   // state register
@@ -19,20 +19,18 @@ module Cipher(
     begin
       step <= IDLE;
       state <= '0;
-      roundKey <= '0;
       cnt <= 0;
     end
     else
     begin
       step <= nextStep;
       state <= nextState;
-      roundKey <= nextRoundKey;
       cnt <= nextCnt;
     end
   end
 
   // next state logic
-  logic[127:0] tmp_addRoundKey, tmp_SubBytes, tmp_ShiftRows, tmp_MixColumns, tmp_nextRoundKey, addRoundKeyInput;
+  logic[127:0] tmp_addRoundKey, tmp_SubBytes, tmp_ShiftRows, tmp_MixColumns, addRoundKeyInput, roundKey;
 
   AddRoundKey addRoundKeyI(
                 .roundKey(roundKey),
@@ -51,60 +49,71 @@ module Cipher(
                .iState(tmp_ShiftRows),
                .oState(tmp_MixColumns)
              );
-  getNextRoundKey getNextRoundKeyI(
-                    .round(cnt),
-                    .inKey(roundKey),
-                    .outKey(tmp_nextRoundKey)
-                  );
+
+  logic startGenKeyExpansion, idleKeyExpansion;
+  KeyExpansion KeyExpansionI(
+                 .clk(clk),
+                 .rst(rst),
+                 .startGen(startGenKeyExpansion),
+                 .inKey(key),
+                 .round(cnt),
+                 .rKey(roundKey),
+                 .idle(idleKeyExpansion)
+               );
 
   always_comb
   begin
     nextState = state;
     nextStep = step;
-    nextRoundKey = roundKey;
     nextCnt = cnt + 1;
+  
     addRoundKeyInput = '0;
-    idle = 0;
+    startGenKeyExpansion = 0;
+
     case(step)
       IDLE:
       begin
-        idle = 1;
-        nextCnt = 1;
+        nextCnt = 0;
         if (start)
         begin
-          nextStep = START;
-          nextRoundKey = key;
-          nextState = iBlock;
+          startGenKeyExpansion = 1;
+          nextStep = KEY_EXPANSION;
         end
       end
 
-      START:
+      KEY_EXPANSION:
       begin
-        nextStep = LOOP;
-        // addRoundKey using first round key (original key)
-        addRoundKeyInput = state;
-        nextState = tmp_addRoundKey;
-        // Note: Rcon starts from 1
-        // cnt must be 1 to get the second round key (which is used in the next round)
-        nextRoundKey = tmp_nextRoundKey;
+        nextCnt = 0;
+        if (idleKeyExpansion)
+        begin
+          nextState = iBlock;
+          nextStep = START_CIPHER;
+        end
       end
 
-      LOOP: // cnt = 2...10 (9 times)
+      START_CIPHER: // cnt = 0
+      begin
+        nextStep = LOOP;
+        addRoundKeyInput = state;
+        nextState = tmp_addRoundKey;
+      end
+
+      LOOP: // cnt = 1...9 (9 times)
       begin
         addRoundKeyInput = tmp_MixColumns;
         nextState = tmp_addRoundKey;
-        nextRoundKey = tmp_nextRoundKey;
-        if (cnt == 10)
+        if (cnt == 9)
         begin
           nextStep = FINNAL;
         end
       end
 
-      FINNAL:
+      FINNAL: // cnt = 10
       begin
         nextStep = IDLE;
         addRoundKeyInput = tmp_ShiftRows;
         nextState = tmp_addRoundKey;
+        nextCnt = 0;
       end
     endcase
   end
@@ -112,13 +121,7 @@ module Cipher(
   // output logic
   always_comb
   begin
-    if (idle)
-    begin
-      oBlock = state;
-    end
-    else
-    begin
-      oBlock = '0;
-    end
+    oBlock = state;
+    idle = (step == IDLE);
   end
 endmodule

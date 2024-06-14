@@ -30,7 +30,8 @@ def main():
 
     test("0123456789abcdef", "0123456789abcdef")
     test("0123456789abcdef", "1408200220062007")
-    
+    test("passwordPassword", "Hoang Minh Huong")
+    test("This's a testKey", "And there's text")
     fTestVector.close()
 
 def test(key, block):
