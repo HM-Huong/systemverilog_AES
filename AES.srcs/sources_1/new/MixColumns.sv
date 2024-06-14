@@ -5,23 +5,23 @@ module MixColumns(
     output logic[127 : 0] oState
   );
 
-  function automatic logic[7:0] twoTimes(input logic [7:0] a);
+  function automatic logic[7:0] times2(input logic [7:0] a);
     if (a[7] == 1)
-      twoTimes = (a << 1) ^ 8'h1b;
+      times2 = (a << 1) ^ 8'h1b;
     else
-      twoTimes = a << 1;
+      times2 = a << 1;
   endfunction
 
-  function automatic logic[7:0] threeTimes(input logic [7:0] a);
-    threeTimes = a ^ twoTimes(a);
+  function automatic logic[7:0] times3(input logic [7:0] a);
+    threeTimes = a ^ times2(a);
   endfunction
 
   function automatic logic[31:0] mix(input logic [31:0] a);
     logic[7:0] a0, a1, a2, a3;
-    a3 = twoTimes(a[24+:8]) ^ threeTimes(a[16+:8]) ^ a[8+:8] ^ a[0+:8];
-    a2 = a[24+:8] ^ twoTimes(a[16+:8]) ^ threeTimes(a[8+:8]) ^ a[0+:8];
-    a1 = a[24+:8] ^ a[16+:8] ^ twoTimes(a[8+:8]) ^ threeTimes(a[0+:8]);
-    a0 = threeTimes(a[24+:8]) ^ a[16+:8] ^ a[8+:8] ^ twoTimes(a[0+:8]);
+    a3 = times2(a[24+:8]) ^ threeTimes(a[16+:8]) ^ a[8+:8] ^ a[0+:8];
+    a2 = a[24+:8] ^ times2(a[16+:8]) ^ threeTimes(a[8+:8]) ^ a[0+:8];
+    a1 = a[24+:8] ^ a[16+:8] ^ times2(a[8+:8]) ^ threeTimes(a[0+:8]);
+    a0 = threeTimes(a[24+:8]) ^ a[16+:8] ^ a[8+:8] ^ times2(a[0+:8]);
     mix = {a3, a2, a1, a0};
   endfunction
 

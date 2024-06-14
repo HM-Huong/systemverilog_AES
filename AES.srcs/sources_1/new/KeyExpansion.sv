@@ -83,7 +83,6 @@ module KeyExpansion(
         // update preW and w[0]
         update_preW = 1;
         en_w = 1;
-        // NOTE: may cause metastability because update cnt and w[cnt] at the same time
         en_cnt = 1; 
         nextStep = UPDATE_ROUND_KEY;
       end
@@ -98,7 +97,6 @@ module KeyExpansion(
         if (cnt == 10)
           nextStep = IDLE;
         else
-        // NOTE: may cause metastability because update cnt and w[cnt] at the same time
           en_cnt = 1;
       end
     endcase
