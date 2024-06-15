@@ -13,15 +13,15 @@ module MixColumns(
   endfunction
 
   function automatic logic[7:0] times3(input logic [7:0] a);
-    threeTimes = a ^ times2(a);
+    times3 = a ^ times2(a);
   endfunction
 
   function automatic logic[31:0] mix(input logic [31:0] a);
     logic[7:0] a0, a1, a2, a3;
-    a3 = times2(a[24+:8]) ^ threeTimes(a[16+:8]) ^ a[8+:8] ^ a[0+:8];
-    a2 = a[24+:8] ^ times2(a[16+:8]) ^ threeTimes(a[8+:8]) ^ a[0+:8];
-    a1 = a[24+:8] ^ a[16+:8] ^ times2(a[8+:8]) ^ threeTimes(a[0+:8]);
-    a0 = threeTimes(a[24+:8]) ^ a[16+:8] ^ a[8+:8] ^ times2(a[0+:8]);
+    a3 = times2(a[24+:8]) ^ times3(a[16+:8]) ^ a[8+:8] ^ a[0+:8];
+    a2 = a[24+:8] ^ times2(a[16+:8]) ^ times3(a[8+:8]) ^ a[0+:8];
+    a1 = a[24+:8] ^ a[16+:8] ^ times2(a[8+:8]) ^ times3(a[0+:8]);
+    a0 = times3(a[24+:8]) ^ a[16+:8] ^ a[8+:8] ^ times2(a[0+:8]);
     mix = {a3, a2, a1, a0};
   endfunction
 
