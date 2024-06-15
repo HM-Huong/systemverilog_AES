@@ -23,6 +23,21 @@ That means, the shiftRows operation is actually a column shift operation. And in
 import copy
 
 def main():
+    # cipher_InvCipher_test()
+    AES128CTR_test()
+
+def AES128CTR_test():
+    res = EncryptAES128CTR(
+        key   = "passwordPassword", 
+        iv    = "0123456789abcdef", 
+        data  = "Hoang Minh Huong7895879546898785Is this a key???Yes, it is a key1452697525963487", 
+        debug =True
+    )
+    showHex("Cipher text (hex):\t", res)
+    # res = DecryptAES128CTR("passwordPassword", "0123456789abcdef", res)
+    # showHex("Decipher text (hex):\t", res)
+
+def cipher_InvCipher_test():
     global fTestVector
     fTestVector = None
     # fTestVector = open("aesTestVector.mem", "w")
@@ -42,11 +57,48 @@ def main():
     # testInvCipher("Is this a key???", "Yes, it is a key")
     # testInvCipher("1452697525963487", "1598789878564755")
 
+
+def EncryptAES128CTR(key, iv, data, debug=False):
+    def incIV(iv):
+        for i in range(15, -1, -1):
+            iv[i] = (iv[i] + 1) & 0xff
+            if iv[i] != 0:
+                break
+        return iv
+    
+    def xorBlocks(a, b):
+        for i in range(min(len(a), len(b))):
+            a[i] ^= b[i]
+        return a
+    
+    key = strToBytes(key)
+    showHex("Key (hex):\t", key)
+    iv = strToBytes(iv)
+    showHex("IV (hex):\t", iv)
+    data = strToBytes(data)
+    showHex("Data (hex):\t", data)
+    w = keyExpansion(key, 4, 10)
+    cipherText = []
+
+    for i in range(0, len(data), 16):
+        block = data[i:i+16]
+        showHex("\nBlock (hex):\t", block, show=debug)
+        block = xorBlocks(block, cipher(iv, 10, w))
+        showHex("\tXOR (hex):\t", block, show=debug)
+        cipherText.extend(block)
+        iv = incIV(iv)
+        showHex("\tIV (hex):\t", iv, show=debug)
+
+    return cipherText
+
+def DecryptAES128CTR(key, iv, data, debug=False):
+    return EncryptAES128CTR(key, iv, data, debug)
+
 def testCipher(key, block, debug=False):
     print("Key:\t", key)
     print("Block:\t", block)
-    key = list(map(ord, key))
-    block = list(map(ord, block))
+    key = strToBytes(key)
+    block = strToBytes(block)
     w = keyExpansion(key, 4, 10)
     # showHex("Key schedule:", w)
     e = cipher(block, 10, w, debug)
@@ -59,8 +111,8 @@ def testCipher(key, block, debug=False):
 def testInvCipher(key, block, debug=False):
     print("Key:\t", key)
     print("Block:\t", block)
-    key = list(map(ord, key))
-    block = list(map(ord, block))
+    key = strToBytes(key)
+    block = strToBytes(block)
     w = keyExpansion(key, 4, 10)
     # showHex("Key schedule:", w)
     e = cipher(block, 10, w, debug)
@@ -86,7 +138,7 @@ def testCase(key, iblock, oblock):
 
     fTestVector.write(f"{toString(key)}_{toString(iblock)}_{toString(oblock)}\n")
 
-def showHex(message, data, sep=' ', elementPerLine=16, show=True):
+def showHex(message, data, sep='', elementPerLine=16, show=True):
     if not show:
         return
     print(message, end="")
@@ -238,6 +290,11 @@ def keyExpansion(key, nk, nr):
             temp = subWord(temp)
         appendWord(w, xorWord(temp, w[i - nk * 4:i - nk * 4 + 4]))
     return w
+
+def strToBytes(data):
+    if type(data) is str:
+        return list(map(ord, data))
+    return data
 
 def times2(b):
     return ((b << 1) ^ (0x1b & ((b >> 7) * 0xff))) & 0xff
