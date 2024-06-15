@@ -17,7 +17,7 @@ module KeyExpansion(
   logic[127:0] preW, curW;
   logic[127:0] w[0:10];
   logic[3:0] cnt, nextCnt;
-  logic en_w, en_cnt, update_preW;
+  logic en_w, update_preW;
 
   // state register
   always_ff @(posedge clk or posedge rst)
@@ -26,16 +26,15 @@ module KeyExpansion(
     begin
       step <= IDLE;
       cnt <= 0;
+      preW <= 0;
     end
     else
     begin
       step <= nextStep;
+      cnt <= nextCnt;
 
       if (en_w)
         w[cnt] <= curW;
-
-      if (en_cnt)
-        cnt <= nextCnt;
 
       if (update_preW)
         preW <= curW;
@@ -62,7 +61,6 @@ module KeyExpansion(
 
     // control signals
     en_w = 0;
-    en_cnt = 0;
     update_preW = 0;
 
     case (step)
@@ -71,7 +69,6 @@ module KeyExpansion(
         if (startGen)
         begin
           nextCnt = 0;
-          en_cnt = 1;
           nextStep = FIRST_ROUND;
         end
       end
@@ -83,7 +80,6 @@ module KeyExpansion(
         // update preW and w[0]
         update_preW = 1;
         en_w = 1;
-        en_cnt = 1; 
         nextStep = UPDATE_ROUND_KEY;
       end
 
@@ -96,8 +92,6 @@ module KeyExpansion(
 
         if (cnt == 10)
           nextStep = IDLE;
-        else
-          en_cnt = 1;
       end
     endcase
   end
