@@ -2,12 +2,13 @@
 
 module InvCipher(
     input logic clk, rst, start,
-    input logic[127 : 0] key,
+    input logic[127 : 0] roundKey,
     input logic[127 : 0] iBlock,
+    output logic[3 : 0] round,
     output logic[127 : 0] oBlock,
     output logic idle
   );
-  typedef enum { IDLE, KEY_EXPANSION, START_CIPHER, LOOP, FINNAL } State_t;
+  typedef enum { IDLE, START_INV_CIPHER, LOOP, FINNAL } State_t;
   State_t step, nextStep;
   logic[127:0] state, nextState;
   logic[3:0] cnt, nextCnt;
@@ -30,7 +31,8 @@ module InvCipher(
   end
 
   // next state logic
-  logic[127:0] tmp_addRoundKey, addRoundKeyInput, roundKey;
+  logic[127:0] tmp_addRoundKey, addRoundKeyInput;
+  assign round = cnt;
   AddRoundKey AddRoundKeyI(
                 .roundKey(roundKey),
                 .iState(addRoundKeyInput),
@@ -55,17 +57,6 @@ module InvCipher(
                   .oState(tmp_InvMixColumns)
                 );
 
-  logic startGenKeyExpansion, idleKeyExpansion;
-  KeyExpansion KeyExpansionI(
-                 .clk(clk),
-                 .rst(rst),
-                 .startGen(startGenKeyExpansion),
-                 .inKey(key),
-                 .round(cnt),
-                 .rKey(roundKey),
-                 .idle(idleKeyExpansion)
-               );
-
   always_comb
   begin
     nextState = state;
@@ -73,7 +64,6 @@ module InvCipher(
     nextCnt = cnt - 1;
 
     addRoundKeyInput = '0;
-    startGenKeyExpansion = 0;
 
     case(step)
       IDLE:
@@ -81,22 +71,12 @@ module InvCipher(
         nextCnt = 10;
         if (start)
         begin
-          startGenKeyExpansion = 1;
-          nextStep = KEY_EXPANSION;
-        end
-      end
-
-      KEY_EXPANSION:
-      begin
-        nextCnt = 10;
-        if (idleKeyExpansion)
-        begin
           nextState = iBlock;
-          nextStep = START_CIPHER;
+          nextStep = START_INV_CIPHER;
         end
       end
 
-      START_CIPHER: // cnt = 10
+      START_INV_CIPHER: // cnt = 10
       begin
         nextStep = LOOP;
         addRoundKeyInput = state;

@@ -1,3 +1,5 @@
+// FIXME: modify the tesbench to test the newsest Cipher module
+
 `timescale 1ns / 1ps
 
 module tb_cipher();

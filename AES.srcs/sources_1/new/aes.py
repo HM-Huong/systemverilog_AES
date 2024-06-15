@@ -1,4 +1,3 @@
-
 '''
 For easier to implement mixColumns (which is a matrix multiplication), we can change the state matrix order like this:
         Implement               vs              Specification
@@ -26,20 +25,22 @@ import copy
 def main():
     global fTestVector
     fTestVector = None
-    # fTestVector = open("../aesTestVector.mem", "w")
+    # fTestVector = open("aesTestVector.mem", "w")
     # fTestVector.write(f"// {"Key" : ^30} {"Plain text" : ^32} {"Cipher text" : ^32}\n")
 
     # testCipher("0123456789abcdef", "0123456789abcdef")
-    # testCipher("0123456789abcdef", "1408200220062007")
+    # testCipher("0123456789abcdef", "7895879546898785")
     # testCipher("passwordPassword", "Hoang Minh Huong")
-    # testCipher("This's a testKey", "And there's text", debug=True)
+    # testCipher("This's a testKey", "And there's text")
+    # testCipher("Is this a key???", "Yes, it is a key")
+    # testCipher("1452697525963487", "1598789878564755")
 
-    testInvCipher("0123456789abcdef", "0123456789abcdef", debug=True)
-    # testInvCipher("0123456789abcdef", "1408200220062007")
+    # testInvCipher("0123456789abcdef", "0123456789abcdef", debug=True)
+    # testInvCipher("0123456789abcdef", "7895879546898785")
     # testInvCipher("passwordPassword", "Hoang Minh Huong")
     # testInvCipher("This's a testKey", "And there's text")
-
-
+    # testInvCipher("Is this a key???", "Yes, it is a key")
+    # testInvCipher("1452697525963487", "1598789878564755")
 
 def testCipher(key, block, debug=False):
     print("Key:\t", key)
@@ -66,6 +67,7 @@ def testInvCipher(key, block, debug=False):
     showHex("Key (hex):\t", key)
     showHex("Block (hex):\t", block)
     showHex("Cipher (hex):\t", e)
+    print("\n\n\n\n===== Decipher =====")
     d = invCipher(e, 10, w, debug)
     showHex("Decipher (hex):\t", d)
     if d == block:
@@ -84,7 +86,7 @@ def testCase(key, iblock, oblock):
 
     fTestVector.write(f"{toString(key)}_{toString(iblock)}_{toString(oblock)}\n")
 
-def showHex(message, data, sep='', elementPerLine=16, show=True):
+def showHex(message, data, sep=' ', elementPerLine=16, show=True):
     if not show:
         return
     print(message, end="")
@@ -93,39 +95,13 @@ def showHex(message, data, sep='', elementPerLine=16, show=True):
         if i % elementPerLine == elementPerLine - 1:
             print()
 
-def appendWord(dest, src):
-    for i in range(4):
-        dest.append(src[i])
-
-def xorWord(dest, src):
-    for i in range(4):
-        dest[i] ^= src[i]
-    return dest
-
-def keyExpansion(key, nk, nr):
-    def rotWord(word):
-        return [word[1], word[2], word[3], word[0]]
-    def subWord(word):
-        global SBox
-        return [SBox[b] for b in word]
-
-    w = []
-    for i in range(0, nk * 4, 4):
-        appendWord(w, key[i:i+4])
-    for i in range(nk * 4, 16 * (nr + 1), 4):
-        temp = w[i-4:i]
-        if i % (nk * 4) == 0:
-            temp = xorWord(subWord(rotWord(temp)), Rcon[int(i / (nk * 4))])
-        elif nk > 6 and i % (nk * 4) == 4:
-            temp = subWord(temp)
-        appendWord(w, xorWord(temp, w[i - nk * 4:i - nk * 4 + 4]))
-    return w
-
 def cipher(block, nr, w, debug=False):
     roundMessage = "Round {}:\n" if debug else ""
     state = copy.deepcopy(block)
     w = copy.deepcopy(w)
     state = addRoundKey(state, w[0:16])
+    if (len(block) != 16 or len(w) != 16 * (nr + 1)):
+        raise Exception("Invalid block or key length")
     print(roundMessage.format(0), end="")
     showHex("\taddRoundKey:\t", state, show=debug)
     for round in range(1, nr):
@@ -232,6 +208,36 @@ def invMixColumns(state):
         state[i+3] = times11(s0) ^ times13(s1) ^ times9(s2) ^ times14(s3)
     return state
 
+def keyExpansion(key, nk, nr):
+    def appendWord(dest, src):
+        for i in range(4):
+            dest.append(src[i])
+    
+    def xorWord(dest, src):
+        for i in range(4):
+            dest[i] ^= src[i]
+        return dest
+
+    def rotWord(word):
+        return [word[1], word[2], word[3], word[0]]
+
+    def subWord(word):
+        global SBox
+        return [SBox[b] for b in word]
+    
+    if len(key) != nk * 4:
+        raise Exception(f"Invalid key length: {len(key)}")
+    w = []
+    for i in range(0, nk * 4, 4):
+        appendWord(w, key[i:i+4])
+    for i in range(nk * 4, 16 * (nr + 1), 4):
+        temp = w[i-4:i]
+        if i % (nk * 4) == 0:
+            temp = xorWord(subWord(rotWord(temp)), Rcon[int(i / (nk * 4))])
+        elif nk > 6 and i % (nk * 4) == 4:
+            temp = subWord(temp)
+        appendWord(w, xorWord(temp, w[i - nk * 4:i - nk * 4 + 4]))
+    return w
 
 def times2(b):
     return ((b << 1) ^ (0x1b & ((b >> 7) * 0xff))) & 0xff
