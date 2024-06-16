@@ -3,10 +3,10 @@
 module AesCore (
 	input  logic         clk    ,
 	input  logic         rst    ,
+	input  logic         load   , //! load key
+	input  logic [127:0] key    ,
 	input  logic         start  , //! start encrypt/decrypt
 	input  logic         encrypt, //! 1: encrypt, 0: decrypt
-	input  logic [127:0] key    ,
-	input  logic         load   , //! load key
 	input  logic [127:0] iBlock ,
 	output logic [127:0] oBlock ,
 	output logic         idle
@@ -36,17 +36,17 @@ module AesCore (
 		end
 
 	// ==== next state logic & output logic ====
-	logic startGenKeyExpansion, idleKeyExpansion;
+	logic idleKeyExpansion;
 	logic[127:0] roundKey;
 	logic[3:0] round;
 	KeyExpansion KeyExpansionI (
-		.clk     (clk                 ),
-		.rst     (rst                 ),
-		.startGen(startGenKeyExpansion),
-		.inKey   (key                 ),
-		.round   (round               ),
-		.rKey    (roundKey            ),
-		.idle    (idleKeyExpansion    )
+		.clk     (clk             ),
+		.rst     (rst             ),
+		.startGen(load            ),
+		.inKey   (regKey          ),
+		.round   (round           ),
+		.rKey    (roundKey        ),
+		.idle    (idleKeyExpansion)
 	);
 
 	logic done, cipherIdle;
@@ -95,16 +95,14 @@ module AesCore (
 				end
 
 			// default values
-			nextStep             = step;
-			startGenKeyExpansion = 0;
+			nextStep = step;
 
 			case(step)
 				IDLE :
 					begin
 						if (load) // load key
 							begin
-								nextStep             = KEY_EXPANSION;
-								startGenKeyExpansion = 1;
+								nextStep = KEY_EXPANSION;
 							end
 						else
 							if(start)
