@@ -18,7 +18,7 @@ module tb_aesCRT ();
 		.oBlock(oBlock),
 		.idle(done)
 	);
-
+	logic ok;
 	task automatic test(
 			input logic[127:0] in,
 			input logic[127:0] expected
@@ -27,28 +27,43 @@ module tb_aesCRT ();
 		start = 1;
 		repeat(2) @(negedge clk);
 		start = 0;
+		ok = 1'b0;
 		@(posedge done);
 		assert (oBlock === expected)
-			$display("[PASSED] iBlock = %h, oBlock = %h", in, oBlock);
+			begin
+				ok = 1'b1;
+				$display("[PASSED]");
+				$display("\tiBlock \t= %h", in);
+				$display("\toBlock \t= %h", oBlock);
+			end
 		else
-			$error("[FAILED] oBlock = %h, expected = %h", oBlock, expected);
+			begin
+				ok = 1'bx;
+				$error("[FAILED]");
+				$display("\tiBlock \t= %h", in);
+				$display("\toBlock \t= %h", oBlock);
+				$display("\texpected \t= %h", expected);
+			end
 	endtask
 
 	initial
 		begin: MAIN
+			ok = 1'b0;
 			rst = 1;
 			load = 0;
 			start = 0;
 			repeat(2) @(negedge clk);
 			rst = 0;
 
-			$display("\n\n===== encrypt iBlock in CTR mode ======");
+			$display("===== encrypt iBlock in CTR mode ======");
 			// load key and iv
 			load = 1;
 			key = 128'h70617373776f726450617373776f7264;
 			iv = 128'h30313233343536373839616263646566;
 			repeat(2) @(negedge clk);
 			load = 0;
+			// wait for key expansion done
+			@(posedge done);
 
 			test(128'h486f616e67204d696e682048756f6e67, 128'h09353ccc3dff54567bdedb49ddc8deb9);
 			test(128'h37383935383739353436383938373835, 128'h54427e87a044f594f110c07e53f5a0c8);
@@ -56,13 +71,15 @@ module tb_aesCRT ();
 			test(128'h5965732c2069742069732061206b6579, 128'h4b53114ccbde893540e8dca8581259d2);
 			test(128'h31343532363937353235393633343837, 128'h01d1eef69644f6478fe7aed1104561b3);
 
-			$display("\n\n===== decrypt oBlock in CTR mode ======");
+			$display("===== decrypt oBlock in CTR mode ======");
 			// load key and iv
 			load = 1;
 			key = 128'h70617373776f726450617373776f7264;
 			iv = 128'h30313233343536373839616263646566;
 			repeat(2) @(negedge clk);
 			load = 0;
+			// wait for key expansion done
+			@(posedge done);
 
 			test(128'h09353ccc3dff54567bdedb49ddc8deb9, 128'h486f616e67204d696e682048756f6e67);
 			test(128'h54427e87a044f594f110c07e53f5a0c8, 128'h37383935383739353436383938373835);

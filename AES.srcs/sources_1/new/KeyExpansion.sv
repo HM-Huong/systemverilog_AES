@@ -5,10 +5,12 @@
 //      MSB            LSB
 
 module KeyExpansion (
-	input  logic         clk, rst, startGen,
-	logic[127:0] inKey,
-	input  logic [  3:0] round,
-	output logic [127:0] rKey ,
+	input  logic         clk     ,
+	input  logic         rst     ,
+	input  logic         startGen,
+	input  logic [127:0] inKey   ,
+	input  logic [  3:0] round   ,
+	output logic [127:0] rKey    ,
 	output logic         idle
 );
 

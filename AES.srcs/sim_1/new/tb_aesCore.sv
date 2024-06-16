@@ -4,7 +4,7 @@ module tb_aesCore ();
 	parameter CLK_HALF_PERIOD = 1                  ;
 	parameter CLK_PERIOD      = 2 * CLK_HALF_PERIOD;
 
-	logic clk, rst, start, done, encrypt;
+	logic clk, rst, start, done, encrypt, load;
 	logic[127:0] keyVal, iBlock, oBlock;
 
 	AesCore aesCoreI(
@@ -13,6 +13,7 @@ module tb_aesCore ();
 		.start(start),
 		.encrypt(encrypt),
 		.key(keyVal),
+		.load(load),
 		.iBlock(iBlock),
 		.oBlock(oBlock),
 		.idle(done)
@@ -34,6 +35,13 @@ module tb_aesCore ();
 		keyVal = key;
 		iBlock = in;
 		encrypt = enc;
+
+		// load key
+		load = 1;
+		repeat(2) @(negedge clk);
+		load = 0;
+		@(posedge done);
+
 		start = 1;
 		repeat(2) @(negedge clk);
 		start = 0;

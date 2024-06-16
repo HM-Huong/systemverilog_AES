@@ -1,7 +1,8 @@
 `timescale 1ns / 1ps
 
 module InvCipher (
-	input  logic         clk, rst,
+	input  logic         clk     ,
+	input  logic         rst     ,
 	input  logic         start   ,
 	input  logic [127:0] roundKey,
 	input  logic [127:0] iBlock  ,

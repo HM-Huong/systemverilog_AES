@@ -1,19 +1,20 @@
 `timescale 1ns / 1ps
 
 module AesCTR (
-	input  logic         clk, rst,
+	input  logic         clk   ,
+	input  logic         rst   ,
 	input  logic         load  , //! load key and iv
 	input  logic         start , //! start encrypt/decrypt iBlock in CTR mode
-	input  logic [127:0] key, iv,
+	input  logic [127:0] key   ,
+	input  logic [127:0] iv    ,
 	input  logic [127:0] iBlock,
 	output logic [127:0] oBlock,
 	output logic         idle
 );
 
-	typedef enum { IDLE, RUNNING } Step_t;
+	typedef enum { IDLE, KEY_EXPANSION, RUNNING } Step_t;
 	Step_t step, nextStep;
 	logic[127:0] cnt, nextCnt;
-	logic[127:0] regKey;
 	logic[127:0] regIBlock;
 	logic enRegIBlock;
 
@@ -24,19 +25,12 @@ module AesCTR (
 				begin
 					step      <= IDLE;
 					cnt       <= 0;
-					regKey    <= 0;
 					regIBlock <= 0;
 				end
 			else
 				begin
 					step <= nextStep;
 					cnt  <= nextCnt;
-
-					if (load) // load key and iv
-						begin
-							regKey <= key;
-							cnt    <= iv;
-						end
 
 					if (enRegIBlock)
 						begin
@@ -53,7 +47,8 @@ module AesCTR (
 		.rst(rst),
 		.start(start),
 		.encrypt(1'b1),
-		.key(regKey),
+		.key(key),
+		.load(load),
 		.iBlock(cnt),
 		.oBlock(aesCoreOutput),
 		.idle(aesCoreIdle)
@@ -68,18 +63,24 @@ module AesCTR (
 
 			case(step)
 				IDLE :
-					if (start)
-						begin
-							nextStep    = RUNNING;
-							enRegIBlock = 1;
-						end
+					if (load) begin
+						nextCnt  = iv;
+						nextStep = KEY_EXPANSION;
+					end else if (start) begin
+						nextStep    = RUNNING;
+						enRegIBlock = 1;
+					end
+
+				KEY_EXPANSION :
+					if (aesCoreIdle) begin
+						nextStep = IDLE;
+					end
 
 				RUNNING :
-					if (aesCoreIdle)
-						begin
-							nextStep = IDLE;
-							nextCnt  = cnt + 1;
-						end
+					if (aesCoreIdle) begin
+						nextStep = IDLE;
+						nextCnt  = cnt + 1;
+					end
 			endcase
 		end
 

@@ -1,10 +1,12 @@
 `timescale 1ns / 1ps
 
 module AesCore (
-	input  logic         clk, rst,
+	input  logic         clk    ,
+	input  logic         rst    ,
 	input  logic         start  , //! start encrypt/decrypt
 	input  logic         encrypt, //! 1: encrypt, 0: decrypt
 	input  logic [127:0] key    ,
+	input  logic         load   , //! load key
 	input  logic [127:0] iBlock ,
 	output logic [127:0] oBlock ,
 	output logic         idle
@@ -12,17 +14,24 @@ module AesCore (
 
 	typedef enum { IDLE, KEY_EXPANSION, RUNNING } Step_t;
 	Step_t step, nextStep;
+	logic[127:0] regKey;
 
 	// ==== state register ====
 	always_ff @(posedge clk or posedge rst)
 		begin
 			if (rst)
 				begin
-					step <= IDLE;
+					step   <= IDLE;
+					regKey <= '0;
 				end
 			else
 				begin
 					step <= nextStep;
+
+					if (load) // load key
+						begin
+							regKey <= key;
+						end
 				end
 		end
 
@@ -40,13 +49,13 @@ module AesCore (
 		.idle    (idleKeyExpansion    )
 	);
 
-	logic run, done, cipherIdle;
+	logic done, cipherIdle;
 	logic[127:0] oCipher;
 	logic[3:0] cipherRound;
 	Cipher cipherI (
 		.clk     (clk        ),
 		.rst     (rst        ),
-		.start   (run        ),
+		.start   (start      ),
 		.roundKey(roundKey   ),
 		.iBlock  (iBlock     ),
 		.oBlock  (oCipher    ),
@@ -60,7 +69,7 @@ module AesCore (
 	InvCipher invCipherI (
 		.clk     (clk           ),
 		.rst     (rst           ),
-		.start   (run           ),
+		.start   (start         ),
 		.roundKey(roundKey      ),
 		.iBlock  (iBlock        ),
 		.oBlock  (oInvCipher    ),
@@ -88,24 +97,27 @@ module AesCore (
 			// default values
 			nextStep             = step;
 			startGenKeyExpansion = 0;
-			run                  = 0;
 
 			case(step)
 				IDLE :
 					begin
-						if(start)
+						if (load) // load key
 							begin
 								nextStep             = KEY_EXPANSION;
 								startGenKeyExpansion = 1;
 							end
+						else
+							if(start)
+								begin
+									nextStep = RUNNING;
+								end
 					end
 
 				KEY_EXPANSION :
 					begin
 						if(idleKeyExpansion)
 							begin
-								nextStep = RUNNING;
-								run      = 1;
+								nextStep = IDLE;
 							end
 					end
 

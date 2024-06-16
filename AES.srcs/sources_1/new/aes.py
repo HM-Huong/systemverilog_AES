@@ -23,8 +23,8 @@ That means, the shiftRows operation is actually a column shift operation. And in
 import copy
 
 def main():
-	# cipher_InvCipher_test()
-	AES128CTR_test()
+	cipher_InvCipher_test()
+	# AES128CTR_test()
 
 def AES128CTR_test():
 	res = EncryptAES128CTR(
@@ -43,7 +43,7 @@ def cipher_InvCipher_test():
 	# fTestVector = open("aesTestVector.mem", "w")
 	# fTestVector.write(f"// {"Key" : ^30} {"Plain text" : ^32} {"Cipher text" : ^32}\n")
 
-	# testCipher("0123456789abcdef", "0123456789abcdef")
+	testCipher("0123456789abcdef", "0123456789abcdef", debug=True)
 	# testCipher("0123456789abcdef", "7895879546898785")
 	# testCipher("passwordPassword", "Hoang Minh Huong")
 	# testCipher("This's a testKey", "And there's text")
@@ -100,7 +100,7 @@ def testCipher(key, block, debug=False):
 	key = strToBytes(key)
 	block = strToBytes(block)
 	w = keyExpansion(key, 4, 10)
-	# showHex("Key schedule:", w)
+	showHex("Key schedule:", w)
 	e = cipher(block, 10, w, debug)
 	showHex("Key (hex):\t", key)
 	showHex("Block (hex):\t", block)
