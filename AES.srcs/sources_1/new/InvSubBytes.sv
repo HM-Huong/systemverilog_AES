@@ -1,14 +1,14 @@
 `timescale 1ns / 1ps
 
-module InvSubBytes(
-    input logic [127 : 0] iState,
-    output logic [127 : 0] oState
-  );
-  for (genvar i = 0; i < 16; i++)
-  begin : loop
-    InvSBox invSbox(
-           .in(iState[i * 8 +: 8]),
-           .out(oState[i * 8 +: 8])
-         );
-  end
+module InvSubBytes (
+	input  logic [127:0] iState,
+	output logic [127:0] oState
+);
+	for (genvar i = 0; i < 16; i++)
+		begin : loop
+			InvSBox invSbox(
+				.in(iState[i * 8 +: 8]),
+				.out(oState[i * 8 +: 8])
+			);
+		end
 endmodule
