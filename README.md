@@ -106,7 +106,7 @@ The `AddRoundKey` module performs the XOR operation between the state matrix and
 
 ![Illustration AddRoundKey](attachments/README/Illustration_AddRoundKey.png)
 
-## Implementation results
+## Synthesis results
 
 Tool: Vivado 2020.2
 

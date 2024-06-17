@@ -1,23 +1,23 @@
 '''
 For easier to implement mixColumns (which is a matrix multiplication), we can change the state matrix order like this:
         Implement               vs              Specification
-b0      b1      b2      b3              s0      s4      s8      s12
-b4      b5      b6      b7              s1      s5      s9      s13
-b8      b9      b10     b11             s2      s6      s10     s14
-b12     b13     b14     b15             s3      s7      s11     s15
+b15     b14     b13     b12              s0      s4      s8      s12
+b11     b10     b9      b8               s1      s5      s9      s13
+b7      b6      b5      b4               s2      s6      s10     s14
+b3      b2      b1      b0               s3      s7      s11     s15
 
-state = [b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
-         ^                                                                ^
-        MSB                                                              LSB
+state = [b15, b14, b13, b12, b11, b10, b9, b8, b7, b6, b5, b4, b3, b2, b1, b0]
+         ^                                                                 ^
+        MSB                                                               LSB
 
 1 word = 4 bytes
 state = [w0, w1, w2, w3]
-w0 = [b0, b1, b2, b3]       =   [s0, s1, s2, s3]
-w1 = [b4, b5, b6, b7]       =   [s4, s5, s6, s7]
-w2 = [b8, b9, b10, b11]     =   [s8, s9, s10, s11]
-w3 = [b12, b13, b14, b15]   =   [s12, s13, s14, s15]
+w0 = [s0,  s1,  s2,  s3 ]   =   [b15, b14, b13, b12]
+w1 = [s4,  s5,  s6,  s7 ]   =   [b11, b10, b9,  b8 ]
+w2 = [s8,  s9,  s10, s11]   =   [b7,  b6,  b5,  b4 ]
+w3 = [s12, s13, s14, s15]   =   [b3,  b2,  b1,  b0 ]
 
-That means, the shiftRows operation is actually a column shift operation. And in the mixColumns operation, we can do the matrix multiplication by fixMatrixRow x stateRow, which is more easier to implement in hardware.
+That means, the shiftRows operation is actually a shiftColumns operation. And in the mixColumns operation, we can do the matrix multiplication by fixMatrixRow x stateRow, which is more easier to implement in hardware.
 '''
 
 import copy
