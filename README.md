@@ -106,6 +106,25 @@ The `AddRoundKey` module performs the XOR operation between the state matrix and
 
 ![Illustration AddRoundKey](attachments/README/Illustration_AddRoundKey.png)
 
+## Implementation results
+
+Tool: Vivado 2020.2
+
+Device: Arty A7-35T (xc7a35ticsg324-1L)
+
+Resource:
+
+- LUTs: 2225
+- FFs: 2068
+
 ## References
 
 - [Specification for the ADVANCED ENCRYPTION STANDARD (AES)](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197-upd1.pdf)
+
+<div align="center">
+
+![Visitors](https://api.visitorbadge.io/api/combined?path=https%3A%2F%2Fgithub.com%2FHM-Huong%2Fsystemverilog_AES&countColor=%23b3c6ea&labelStyle=none)
+
+<!-- https://visitorbadge.io/status?path=https://github.com/HM-Huong/systemverilog_AES -->
+
+</div>
