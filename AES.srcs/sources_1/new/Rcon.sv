@@ -1,13 +1,13 @@
 `timescale 1ns / 1ps
 
 module Rcon (
-	input  logic [ 3:0] r   ,
+	input  logic [ 3:0] round,
 	output logic [31:0] rcon
 );
 
 	always_comb
 		begin
-			case (r)
+			case (round)
 				4'h1 :
 					rcon = 32'h01000000;
 				4'h2 :

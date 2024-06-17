@@ -10,8 +10,8 @@ module InvCipher (
 	output logic [127:0] oBlock  ,
 	output logic         idle
 );
-	typedef enum { IDLE, START_INV_CIPHER, LOOP, FINNAL } State_t;
-	State_t step, nextStep;
+	typedef enum { IDLE, START_INV_CIPHER, LOOP, FINNAL } Step_t;
+	Step_t step, nextStep;
 	logic[127:0] state, nextState;
 	logic[3:0] cnt, nextCnt;
 
@@ -49,8 +49,8 @@ module InvCipher (
 
 	logic[127:0] tmp_InvSubBytes;
 	InvSubBytes InvSubBytesI (
-		.iState(tmp_InvShiftRows),
-		.oState(tmp_InvSubBytes )
+		.in(tmp_InvShiftRows),
+		.out(tmp_InvSubBytes )
 	);
 
 	logic[127:0] tmp_InvMixColumns;

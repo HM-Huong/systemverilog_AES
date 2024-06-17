@@ -10,8 +10,8 @@ module Cipher (
 	output logic [127:0] oBlock  ,
 	output logic         idle
 );
-	typedef enum { IDLE, START_CIPHER, LOOP, FINNAL } State_t;
-	State_t step, nextStep;
+	typedef enum { IDLE, START_CIPHER, LOOP, FINNAL } Step_t;
+	Step_t step, nextStep;
 	logic[127:0] state, nextState;
 	logic[3:0] cnt, nextCnt;
 
@@ -41,8 +41,8 @@ module Cipher (
 		.oState  (tmp_addRoundKey )
 	);
 	SubBytes subBytesI (
-		.iState(state       ),
-		.oState(tmp_SubBytes)
+		.in(state       ),
+		.out(tmp_SubBytes)
 	);
 	ShiftRows shiftRowsI (
 		.iState(tmp_SubBytes ),

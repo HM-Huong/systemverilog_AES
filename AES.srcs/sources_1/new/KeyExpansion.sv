@@ -14,8 +14,8 @@ module KeyExpansion (
 	output logic         idle
 );
 
-	typedef enum { IDLE, FIRST_ROUND, UPDATE_ROUND_KEY, NEXT_ROUND } State_t;
-	State_t step, nextStep;
+	typedef enum { IDLE, FIRST_ROUND, UPDATE_ROUND_KEY, NEXT_ROUND } Step_t;
+	Step_t step, nextStep;
 	logic[127:0] preW, curW;
 	logic[127:0] w[0:10];
 	logic[3:0] cnt, nextCnt;
@@ -44,9 +44,15 @@ module KeyExpansion (
 		end
 
 	logic[31:0] rcon, subWordOut;
-	Rcon RconI (.r(cnt), .rcon(rcon));
+	Rcon RconI (
+		.round(cnt ),
+		.rcon (rcon)
+	);
 
-	SubWord SubWordI (.in({preW[0+:24],preW[24+:8]}), .out(subWordOut));
+	SubBytes #(4) SubWordI (
+		.in ({preW[0 +: 24], preW[24 +: 8]}),
+		.out(subWordOut                    )
+	);
 
 	// next state logic
 	always_comb
