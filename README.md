@@ -53,7 +53,7 @@ The `AesCore` module has an FSM with the following states:
 
 ![KeyExpansion module](attachments/README/KeyExpansion_module.png)
 
-The `KeyExpansion` module generates the round keys from the input `key` using the Rijndael key schedule algorithm. The diagram below shows the key expansion FMS:
+The `KeyExpansion` module generates the round keys from the input `key`. The diagram below shows the key expansion FMS:
 
 ![KeyExpansion FMS](attachments/README/KeyExpansion_FMS.png)
 
@@ -75,9 +75,9 @@ The following diagram shows the FSM of the `InvCipher` module. For more informat
 
 ### [SubBytes](AES.srcs/sources_1/new/SubBytes.sv) and [InvSubBytes module](AES.srcs/sources_1/new/InvSubBytes.sv)
 
-![SubBytes and InvSubBytes module](attachments/README/iState_oState.png)
+![SubBytes and InvSubBytes module](attachments/README/SubBytes.png)
 
-The `SubBytes` and `InvSubBytes` modules perform the substitution operation using the S-box and its inverse, respectively.
+The `SubBytes` and `InvSubBytes` modules perform the bytes substitution operation and its inverse, respectively. These modules have a parameter `n` (default value is 16) to determine the bus width (in bytes) of the input and output data.
 
 ![Illustration SBox](attachments/README/Illustration_SBox.png)
 
