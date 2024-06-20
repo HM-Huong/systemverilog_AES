@@ -43,17 +43,19 @@ The `AesCore` module is the core module that performs the AES encryption and dec
 
 The `AesCore` module has an FSM with the following states:
 
-- `IDLE`: The initial state where the module waits for the `load` or the `start` signal to be asserted. When `load` is asserted, the module stores the `key` value in its internal register (otherwise, the `key` must be stable for several cycles to calculate the round keys), starts the `KeyExpansion` module to generate the round keys, and transitions to the `KEY_EXPANSION` state. When `start` is asserted, the module starts the `Cipher` and `InvCipher` modules to perform the encryption or decryption operation and transitions to the `RUNNING` state.
+- `IDLE`: The initial state where the module waits for the `load` or the `start` signal to be asserted. When `load` is asserted, the module starts the `KeyExpansion` module to generate the round keys, and transitions to the `KEY_EXPANSION` state. When `start` is asserted, the module starts the `Cipher` and `InvCipher` modules to perform the encryption or decryption operation and transitions to the `RUNNING` state.
 - `KEY_EXPANSION`: The state where the module waits for the `idle` signal of the `KeyExpansion` module to be asserted. The module returns to the `IDLE` state when the `idle` of the `KeyExpansion` module is asserted.
 - `RUNNING`: The state where the module waits for the `idle` signal of the `Cipher` or `InvCipher` (depending on the `encrypt` signal) module to be asserted. When `idle` is asserted, the module transitions back to the `IDLE` state.
 
 ![AesCore FSM](attachments/README/AesCore_FSM.png)
 
+The output of the `AesCore` is multiplexed between the output of the `Cipher` and `InvCipher` modules based on the `encrypt` signal. Therefore, you must wait for the `idle` signal to be asserted and then read the output of the `AesCore` module without changing the `encrypt` signal to get the correct result.
+
 ### [KeyExpansion module](AES.srcs/sources_1/new/KeyExpansion.sv)
 
 ![KeyExpansion module](attachments/README/KeyExpansion_module.png)
 
-The `KeyExpansion` module generates the round keys from the input `key`. The diagram below shows the key expansion FMS:
+The `KeyExpansion` module generates the round keys from the input `iKey`. The diagram below shows the key expansion FMS:
 
 ![KeyExpansion FMS](attachments/README/KeyExpansion_FMS.png)
 
@@ -114,8 +116,8 @@ Device: Arty A7-35T (xc7a35ticsg324-1L)
 
 Resource:
 
-- LUTs: 2225
-- FFs: 2068
+- LUTs: 2189
+- FFs: 1938
 
 ## References
 
