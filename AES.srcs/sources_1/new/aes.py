@@ -114,7 +114,7 @@ def testInvCipher(key, block, debug=False):
 	key = strToBytes(key)
 	block = strToBytes(block)
 	w = keyExpansion(key, 4, 10)
-	# showHex("Key schedule:", w)
+	showHex("Key schedule:", w)
 	e = cipher(block, 10, w, debug)
 	showHex("Key (hex):\t", key)
 	showHex("Block (hex):\t", block)
@@ -389,17 +389,17 @@ InvSBox = (
 )
 
 Rcon =(
-	[0, 0, 0, 0],
-	[0x01, 0, 0, 0],
-	[0x02, 0, 0, 0],
-	[0x04, 0, 0, 0],
-	[0x08, 0, 0, 0],
-	[0x10, 0, 0, 0],
-	[0x20, 0, 0, 0],
-	[0x40, 0, 0, 0],
-	[0x80, 0, 0, 0],
-	[0x1b, 0, 0, 0],
-	[0x36, 0, 0, 0]
+	(0, 0, 0, 0),
+	(0x01, 0, 0, 0),
+	(0x02, 0, 0, 0),
+	(0x04, 0, 0, 0),
+	(0x08, 0, 0, 0),
+	(0x10, 0, 0, 0),
+	(0x20, 0, 0, 0),
+	(0x40, 0, 0, 0),
+	(0x80, 0, 0, 0),
+	(0x1b, 0, 0, 0),
+	(0x36, 0, 0, 0)
 )
 
 if __name__ == '__main__':

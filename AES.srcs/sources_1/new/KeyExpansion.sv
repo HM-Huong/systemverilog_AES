@@ -14,7 +14,7 @@ module KeyExpansion (
 	output logic         idle
 );
 
-	typedef enum { IDLE, FIRST_ROUND, UPDATE_ROUND_KEY, NEXT_ROUND } Step_t;
+	typedef enum { IDLE, UPDATE_ROUND_KEY } Step_t;
 	Step_t step, nextStep;
 	logic[127:0] preW, curW;
 	logic[127:0] w[0:10];
@@ -74,28 +74,27 @@ module KeyExpansion (
 			case (step)
 				IDLE :
 					begin
+						nextCnt = 0;
+
 						if (startGen)
 							begin
-								nextCnt  = 0;
-								nextStep = FIRST_ROUND;
-							end
-					end
+								nextCnt = 1;
 
-				FIRST_ROUND : // cnt = 0
-					begin
-						// first round key is the input key
-						curW        = inKey;
-						// update preW and w[0]
-						update_preW = 1;
-						en_w        = 1;
-						nextStep    = UPDATE_ROUND_KEY;
+								// first round key is the input key
+								curW        = inKey;
+
+								// update preW and w[0] to curW
+								update_preW = 1;
+								en_w = 1;
+
+								nextStep = UPDATE_ROUND_KEY;
+							end
 					end
 
 				UPDATE_ROUND_KEY : // cnt = 1...10
 					begin
-						// copy curW to w[cnt]
+						// update preW and w[cnt] to curW
 						en_w        = 1;
-						// update preW to curW
 						update_preW = 1;
 
 						if (cnt == 10)

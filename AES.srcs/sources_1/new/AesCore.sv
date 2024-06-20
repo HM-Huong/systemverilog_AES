@@ -14,7 +14,6 @@ module AesCore (
 
 	typedef enum { IDLE, KEY_EXPANSION, RUNNING } Step_t;
 	Step_t step, nextStep;
-	logic[127:0] regKey;
 
 	// ==== state register ====
 	always_ff @(posedge clk or posedge rst)
@@ -22,16 +21,10 @@ module AesCore (
 			if (rst)
 				begin
 					step   <= IDLE;
-					regKey <= '0;
 				end
 			else
 				begin
 					step <= nextStep;
-
-					if (load) // load key
-						begin
-							regKey <= key;
-						end
 				end
 		end
 
@@ -43,7 +36,7 @@ module AesCore (
 		.clk     (clk             ),
 		.rst     (rst             ),
 		.startGen(load            ),
-		.inKey   (regKey          ),
+		.inKey   (key             ),
 		.round   (round           ),
 		.rKey    (roundKey        ),
 		.idle    (idleKeyExpansion)
