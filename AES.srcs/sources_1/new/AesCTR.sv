@@ -1,6 +1,10 @@
 `timescale 1ns / 1ps
 
 module AesCTR (
+`ifdef USE_POWER_PINS
+	inout                VPWR  ,
+	inout                VGND  ,
+`endif
 	input  logic         clk   ,
 	input  logic         rst   ,
 	input  logic         load  , //! load key and iv
@@ -87,7 +91,7 @@ module AesCTR (
 	// ==== output logic ====
 	always_comb
 		begin : OUTPUT_LOGIC
-			idle   = (step == IDLE) ? 1 : 0;
+			idle   = (step == IDLE);
 			oBlock = aesCoreOutput ^ regIBlock;
 		end
 endmodule

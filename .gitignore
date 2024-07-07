@@ -1,5 +1,6 @@
 *.exe
-
+tmp.*
+runs/
 
 #########################################################################################
 ##  Project    : Collect of various scripts for working with EDA-tools (ASIC/FPGA/etc) ##

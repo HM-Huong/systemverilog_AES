@@ -50,7 +50,7 @@ module KeyExpansion (
 	);
 
 	SubBytes #(4) SubWordI (
-		.in ({preW[0 +: 24], preW[24 +: 8]}),
+		.in ({preW[0 +: 24], preW[24 +: 8]}), // RotWord
 		.out(subWordOut                    )
 	);
 
@@ -81,11 +81,11 @@ module KeyExpansion (
 								nextCnt = 1;
 
 								// first round key is the input key
-								curW        = inKey;
+								curW = inKey;
 
 								// update preW and w[0] to curW
 								update_preW = 1;
-								en_w = 1;
+								en_w        = 1;
 
 								nextStep = UPDATE_ROUND_KEY;
 							end
@@ -104,17 +104,8 @@ module KeyExpansion (
 		end
 
 	// output logic
-	always_comb
-		begin
-			if (step == IDLE)
-				begin
-					idle = 1;
-					rKey = w[round];
-				end
-			else
-				begin
-					idle = 0;
-					rKey = '0;
-				end
-		end
+	always_comb begin
+		rKey = w[round];
+		idle = (step == IDLE);
+	end
 endmodule
